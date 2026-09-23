@@ -46,7 +46,7 @@ public:
 
   EnergyMonitor emon1; // Phase 1
   EnergyMonitor emon2; // Phase 2
-  // EnergyMonitor emon3; //Phase 3
+  EnergyMonitor emon3; //Phase 3
 
   // Phase 1 sensors
   Sensor *realpower_sensor1 = new Sensor();
@@ -54,6 +54,8 @@ public:
   Sensor *powerfactor_sensor1 = new Sensor();
   Sensor *supplyvoltage_sensor1 = new Sensor();
   Sensor *current_sensor1 = new Sensor();
+  Sensor *importpower_sensor1 = new Sensor();   
+  Sensor *exportpower_sensor1 = new Sensor();   
 
   // Phase 2 sensors
   Sensor *realpower_sensor2 = new Sensor();
@@ -61,15 +63,18 @@ public:
   Sensor *powerfactor_sensor2 = new Sensor();
   Sensor *supplyvoltage_sensor2 = new Sensor();
   Sensor *current_sensor2 = new Sensor();
+  Sensor *importpower_sensor2 = new Sensor();   
+  Sensor *exportpower_sensor2 = new Sensor();   
 
   // Phase 3 sensors
-  /*
-   Sensor *realpower_sensor3 = new Sensor();
-   Sensor *apparentpower_sensor3 = new Sensor();
-   Sensor *powerfactor_sensor3 = new Sensor();
-   Sensor *supplyvoltage_sensor3 = new Sensor();
-   Sensor *current_sensor3 = new Sensor();
-   */
+  
+  Sensor *realpower_sensor3 = new Sensor();
+  Sensor *apparentpower_sensor3 = new Sensor();
+  Sensor *powerfactor_sensor3 = new Sensor();
+  Sensor *supplyvoltage_sensor3 = new Sensor();
+  Sensor *current_sensor3 = new Sensor();
+  Sensor *importpower_sensor_total = new Sensor();  
+  Sensor *exportpower_sensor_total = new Sensor();   
 
   // Total sensors
   Sensor *realpower_sensor_total = new Sensor();
