@@ -142,9 +142,12 @@ public:
       export_out = 0.0f;
     }
   }
-  
+
   void update() override
   {
+    float import1 = 0, export1 = 0;
+    float import2 = 0, export2 = 0;
+    float import3 = 0, export3 = 0;
 
     // Phase 1
     emon1.calcVI(CROSSINGS, 2000);
@@ -158,6 +161,10 @@ public:
     supplyvoltage_sensor1->publish_state(supplyVoltage1);
     float current1 = emon1.Irms;
     current_sensor1->publish_state(current1);
+
+    split_bidirectional(realPower1, import1, export1);
+    importpower_sensor1->publish_state(import1);
+    exportpower_sensor1->publish_state(export1);
 
     esp_task_wdt_reset(); // Things can take some time... this ensures the watchdog is aware
 
@@ -174,22 +181,31 @@ public:
     float current2 = emon2.Irms;
     current_sensor2->publish_state(current2);
 
+    split_bidirectional(realPower2, import2, export2);
+    importpower_sensor2->publish_state(import2);
+    exportpower_sensor2->publish_state(export2);
+
     esp_task_wdt_reset(); // Things can take some time... this ensures the watchdog is aware
 
     
-     // Phase 3
-     emon3.calcVI(CROSSINGS,2000);
-     float realPower3 = emon3.realPower;
-     realpower_sensor3->publish_state(realPower3);
-     float apparentPower3 = emon3.apparentPower;
-     apparentpower_sensor3->publish_state(apparentPower3);
-     float powerFactor3 = emon3.powerFactor;
-     powerfactor_sensor3->publish_state(powerFactor3);
-     float supplyVoltage3 = emon3.Vrms;
-     supplyvoltage_sensor3->publish_state(supplyVoltage3);
-     float current3 = emon3.Irms;
-     current_sensor3->publish_state(current3);
-     
+    // Phase 3
+    emon3.calcVI(CROSSINGS,2000);
+    float realPower3 = emon3.realPower;
+    realpower_sensor3->publish_state(realPower3);
+    float apparentPower3 = emon3.apparentPower;
+    apparentpower_sensor3->publish_state(apparentPower3);
+    float powerFactor3 = emon3.powerFactor;
+    powerfactor_sensor3->publish_state(powerFactor3);
+    float supplyVoltage3 = emon3.Vrms;
+    supplyvoltage_sensor3->publish_state(supplyVoltage3);
+    float current3 = emon3.Irms;
+    current_sensor3->publish_state(current3);
+
+    split_bidirectional(realPower3, import3, export3); 
+    importpower_sensor3->publish_state(import3);          
+    exportpower_sensor3->publish_state(export3); 
+    
+    esp_task_wdt_reset();
 
     /*
     // Totals 1 phase - uncomment only this block if you are reading one phase
@@ -218,5 +234,7 @@ public:
      float current_total = emon1.Irms + emon2.Irms + emon3.Irms;
      current_sensor_total->publish_state(current_total);
      
+     importpower_sensor_total->publish_state(import1 + import2 + import3);
+     exportpower_sensor_total->publish_state(export1 + export2 + export3);
   }
 };
