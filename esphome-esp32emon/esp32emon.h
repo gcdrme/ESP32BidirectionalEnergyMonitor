@@ -80,6 +80,8 @@ public:
   Sensor *realpower_sensor_total = new Sensor();
   Sensor *apparentpower_sensor_total = new Sensor();
   Sensor *current_sensor_total = new Sensor();
+  Sensor *importpower_sensor_total = new Sensor();  
+  Sensor *exportpower_sensor_total = new Sensor();   
 
   void setup() override
   {
