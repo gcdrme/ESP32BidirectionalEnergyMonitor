@@ -16,6 +16,9 @@
 // Polling interval
 #define POLLING_INTERVAL 30000 //Every 30s will perform a read and publish the data. Do not go under 5s to prevent crashes.
 
+// Deadband (W) — abaixo disso, trata como zero para evitar oscilação perto de 0W
+#define DEADBAND 10.0f
+
 // Pin configuration
 #define V1 34
 #define V2 34 //Set to V1 if using only one voltage meter
@@ -43,7 +46,7 @@ public:
 
   EnergyMonitor emon1; // Phase 1
   EnergyMonitor emon2; // Phase 2
-  // EnergyMonitor emon3; //Phase 3
+  EnergyMonitor emon3; // Phase 3
 
   // Phase 1 sensors
   Sensor *realpower_sensor1 = new Sensor();
@@ -51,6 +54,8 @@ public:
   Sensor *powerfactor_sensor1 = new Sensor();
   Sensor *supplyvoltage_sensor1 = new Sensor();
   Sensor *current_sensor1 = new Sensor();
+  Sensor *importpower_sensor1 = new Sensor();   
+  Sensor *exportpower_sensor1 = new Sensor();   
 
   // Phase 2 sensors
   Sensor *realpower_sensor2 = new Sensor();
@@ -58,20 +63,25 @@ public:
   Sensor *powerfactor_sensor2 = new Sensor();
   Sensor *supplyvoltage_sensor2 = new Sensor();
   Sensor *current_sensor2 = new Sensor();
+  Sensor *importpower_sensor2 = new Sensor();   
+  Sensor *exportpower_sensor2 = new Sensor();   
 
   // Phase 3 sensors
-  /*
-   Sensor *realpower_sensor3 = new Sensor();
-   Sensor *apparentpower_sensor3 = new Sensor();
-   Sensor *powerfactor_sensor3 = new Sensor();
-   Sensor *supplyvoltage_sensor3 = new Sensor();
-   Sensor *current_sensor3 = new Sensor();
-   */
+  
+  Sensor *realpower_sensor3 = new Sensor();
+  Sensor *apparentpower_sensor3 = new Sensor();
+  Sensor *powerfactor_sensor3 = new Sensor();
+  Sensor *supplyvoltage_sensor3 = new Sensor();
+  Sensor *current_sensor3 = new Sensor();
+  Sensor *importpower_sensor_total = new Sensor();  
+  Sensor *exportpower_sensor_total = new Sensor();   
 
   // Total sensors
   Sensor *realpower_sensor_total = new Sensor();
   Sensor *apparentpower_sensor_total = new Sensor();
   Sensor *current_sensor_total = new Sensor();
+  Sensor *importpower_sensor_total = new Sensor();  
+  Sensor *exportpower_sensor_total = new Sensor();   
 
   void setup() override
   {
@@ -112,15 +122,32 @@ public:
     emon2.voltage(V2, CV2, 1.732); // Voltage: input pin, calibration, phase_shift
     emon2.current(I2, CI2);        // Current: input pin, calibration.
 
-    /*
+    
     //Phase 3 sensors
     emon3.voltage(V3, CV3, 1.732);  // Voltage: input pin, calibration, phase_shift
     emon3.current(I3, CI3);       // Current: input pin, calibration.
-    */
+    
+  }
+
+    void split_bidirectional(float realPower, float &import_out, float &export_out)
+  {
+    if (realPower > DEADBAND) {
+      import_out = realPower;
+      export_out = 0.0f;
+    } else if (realPower < -DEADBAND) {
+      import_out = 0.0f;
+      export_out = fabsf(realPower);
+    } else {
+      import_out = 0.0f;
+      export_out = 0.0f;
+    }
   }
 
   void update() override
   {
+    float import1 = 0, export1 = 0;
+    float import2 = 0, export2 = 0;
+    float import3 = 0, export3 = 0;
 
     // Phase 1
     emon1.calcVI(CROSSINGS, 2000);
@@ -134,6 +161,10 @@ public:
     supplyvoltage_sensor1->publish_state(supplyVoltage1);
     float current1 = emon1.Irms;
     current_sensor1->publish_state(current1);
+
+    split_bidirectional(realPower1, import1, export1);
+    importpower_sensor1->publish_state(import1);
+    exportpower_sensor1->publish_state(export1);
 
     esp_task_wdt_reset(); // Things can take some time... this ensures the watchdog is aware
 
@@ -150,22 +181,31 @@ public:
     float current2 = emon2.Irms;
     current_sensor2->publish_state(current2);
 
+    split_bidirectional(realPower2, import2, export2);
+    importpower_sensor2->publish_state(import2);
+    exportpower_sensor2->publish_state(export2);
+
     esp_task_wdt_reset(); // Things can take some time... this ensures the watchdog is aware
 
-    /*
-     // Phase 3
-     emon3.calcVI(CROSSINGS,2000);
-     float realPower3 = emon3.realPower;
-     realpower_sensor3->publish_state(realPower3);
-     float apparentPower3 = emon3.apparentPower;
-     apparentpower_sensor3->publish_state(apparentPower3);
-     float powerFactor3 = emon3.powerFactor;
-     powerfactor_sensor3->publish_state(powerFactor3);
-     float supplyVoltage3 = emon3.Vrms;
-     supplyvoltage_sensor3->publish_state(supplyVoltage3);
-     float current3 = emon3.Irms;
-     current_sensor3->publish_state(current3);
-     */
+    
+    // Phase 3
+    emon3.calcVI(CROSSINGS,2000);
+    float realPower3 = emon3.realPower;
+    realpower_sensor3->publish_state(realPower3);
+    float apparentPower3 = emon3.apparentPower;
+    apparentpower_sensor3->publish_state(apparentPower3);
+    float powerFactor3 = emon3.powerFactor;
+    powerfactor_sensor3->publish_state(powerFactor3);
+    float supplyVoltage3 = emon3.Vrms;
+    supplyvoltage_sensor3->publish_state(supplyVoltage3);
+    float current3 = emon3.Irms;
+    current_sensor3->publish_state(current3);
+
+    split_bidirectional(realPower3, import3, export3); 
+    importpower_sensor3->publish_state(import3);          
+    exportpower_sensor3->publish_state(export3); 
+    
+    esp_task_wdt_reset();
 
     /*
     // Totals 1 phase - uncomment only this block if you are reading one phase
@@ -176,7 +216,7 @@ public:
     float current_total = emon1.Irms;
     current_sensor_total->publish_state(current_total);
     */
-
+    /*
     // Totals 2 phases - uncomment only this block if you are reading two phases
     float realPower_total = emon1.realPower + emon2.realPower;
     realpower_sensor_total->publish_state(realPower_total);
@@ -184,8 +224,8 @@ public:
     apparentpower_sensor_total->publish_state(apparentPower_total);
     float current_total = emon1.Irms + emon2.Irms;
     current_sensor_total->publish_state(current_total);
-
-    /*
+    */
+    
      // Totals 3 phases - uncomment only this block if you are reading three phases
      float realPower_total = emon1.realPower + emon2.realPower + emon3.realPower;
      realpower_sensor_total->publish_state(realPower_total);
@@ -193,6 +233,8 @@ public:
      apparentpower_sensor_total->publish_state(apparentPower_total);
      float current_total = emon1.Irms + emon2.Irms + emon3.Irms;
      current_sensor_total->publish_state(current_total);
-     */
+     
+     importpower_sensor_total->publish_state(import1 + import2 + import3);
+     exportpower_sensor_total->publish_state(export1 + export2 + export3);
   }
 };
