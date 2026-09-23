@@ -129,6 +129,20 @@ public:
     
   }
 
+    void split_bidirectional(float realPower, float &import_out, float &export_out)
+  {
+    if (realPower > DEADBAND) {
+      import_out = realPower;
+      export_out = 0.0f;
+    } else if (realPower < -DEADBAND) {
+      import_out = 0.0f;
+      export_out = fabsf(realPower);
+    } else {
+      import_out = 0.0f;
+      export_out = 0.0f;
+    }
+  }
+  
   void update() override
   {
 
