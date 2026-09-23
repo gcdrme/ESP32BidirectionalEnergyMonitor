@@ -16,6 +16,9 @@
 // Polling interval
 #define POLLING_INTERVAL 30000 //Every 30s will perform a read and publish the data. Do not go under 5s to prevent crashes.
 
+// Deadband (W) — abaixo disso, trata como zero para evitar oscilação perto de 0W
+#define DEADBAND 10.0f
+
 // Pin configuration
 #define V1 34
 #define V2 34 //Set to V1 if using only one voltage meter
