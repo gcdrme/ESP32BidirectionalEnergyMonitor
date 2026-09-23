@@ -1,6 +1,70 @@
-# ESP32 + ESPHome Open Source Energy Monitor
+# ESP32 Bidirectional Energy Monitor
 
-----
+A fork of [danpeig/ESP32EnergyMonitor](https://github.com/danpeig/ESP32EnergyMonitor)
+that adds **bidirectional metering** for on-grid solar installations
+(net metering / grid-tie systems).
+
+The original project measures total power at the point of connection but
+reports power as an absolute value — which means it cannot distinguish
+between energy **imported from** the grid and energy **exported to** the
+grid. This fork splits the signed real power reading into separate
+`Import` and `Export` sensors, per phase and aggregated, so the Home
+Assistant Energy Dashboard can correctly track both directions.
+
+---
+
+## What's different from the original
+
+- **Per-phase bidirectional sensors**: `Import Power P1/P2/P3` and
+  `Export Power P1/P2/P3` alongside the existing real/apparent power,
+  power factor, voltage and current sensors.
+- **Aggregated totals**: `Total Import Power` and `Total Export Power`.
+- **Deadband filter** (`DEADBAND`, default `10 W`) to prevent flip-flopping
+  between import/export when the load is close to the generation — a common
+  issue near sunset/sunrise and with small household loads.
+- **kWh integrators** ready for the HA Energy Dashboard:
+  `Total Import Energy` and `Total Export Energy`, with `restore: true`
+  so the counters survive reboots.
+- **3-phase enabled by default** in both `esp32emon.h` and `esp32emon.yaml`
+  (the original shipped with phase 2 active and phase 3 commented out).
+
+Everything else — hardware, calibration, WiFi/OTA setup — is unchanged
+from the original project.
+
+---
+
+## Hardware
+
+Same BOM as the original:
+
+- ESP32 development board (tested on `esp32doit-devkit-v1`)
+- **Voltage**: ZMPT101B modules (one per phase, or one shared if you
+  prefer — the original defaults all three `V*` pins to GPIO 34)
+- **Current**: SCT-013 split-core current transformers (one per phase)
+- Burden resistors and a small RC filter on each CT input
+
+See the original project's documentation for the PCB layout and the
+analog front-end schematic.
+
+---
+
+## Wiring notes (important for bidirectional metering)
+
+For the Import/Export split to work correctly, the **CT orientation
+matters**. The sign of the measured real power follows the physical
+direction of current flow through the CT:
+
+- If the house is **importing** from the grid, the phase current flows
+  into the house and `realPower` reads **positive**.
+- If the PV system is **exporting**, the current reverses and
+  `realPower` reads **negative**.
+
+If you see the two swapped in Home Assistant (Import showing 0 while
+you're clearly consuming), **rotate the SCT-013 clamp 180° around the
+phase conductor**. This is the standard fix and it's mentioned in the
+original project too.
+
+---
 
 ## Introduction
 For months I've been looking for a non-intrusive energy monitoring solution for my home. The residence receives more than one phase from the utility company and the available solutions in the market based on open protocols are extremely expensive for this setup. Cheap alternatives always rely on cloud services and I don't believe any of them will remain online for too long.
