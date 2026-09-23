@@ -184,23 +184,6 @@ sensor:
                 {
                 return 0;
                 }
-      - name: "Import Power P1"
-        device_class: "power"
-        unit_of_measurement: W
-        state_class: "measurement"
-        accuracy_decimals: 1
-        internal: false
-        filters:
-          - lambda: |-
-              if(!isinf(x) && !isnan(x) && x >= 0 && x <= 10e6)
-                {
-                return x;
-                }
-              else
-                {
-                return 0;
-                }  
-
       - name: "Current P1"
         device_class: "current"
         unit_of_measurement: A
@@ -217,6 +200,22 @@ sensor:
                 {
                 return 0;
                 }   
+      - name: "Import Power P1"
+        device_class: "power"
+        unit_of_measurement: W
+        state_class: "measurement"
+        accuracy_decimals: 1
+        internal: false
+        filters:
+          - lambda: |-
+              if(!isinf(x) && !isnan(x) && x >= 0 && x <= 10e6)
+                {
+                return x;
+                }
+              else
+                {
+                return 0;
+                } 
       - name: "Export Power P1"
         device_class: "power"
         unit_of_measurement: W
@@ -610,7 +609,7 @@ sensor:
     restore: true
     filters:
       - multiply: 0.001
-      esphome config esphome-esp32emon/esp32emon.yaml
+
   # Wifi signal sensors
   - platform: wifi_signal # Reports the WiFi signal strength/RSSI in dB
     name: "WiFi signal dB"
