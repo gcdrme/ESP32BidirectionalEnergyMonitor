@@ -106,7 +106,7 @@ sensor:
   - platform: custom
     lambda: |-
       auto my_sensor = new MyPowerSensor();
-      App.register_component(my_sensor);
+      App.register_component_(my_sensor);
 
       // 1-Phase - - uncomment only the following line for 1 phase measurements
       //return {my_sensor->realpower_sensor1, my_sensor->apparentpower_sensor1, my_sensor->powerfactor_sensor1, my_sensor->supplyvoltage_sensor1, my_sensor->current_sensor1, my_sensor->realpower_sensor_total, my_sensor->apparentpower_sensor_total, my_sensor->current_sensor_total};
