@@ -21,8 +21,8 @@
 
 // Pin configuration
 #define V1 34
-#define V2 34 //Set to V1 if using only one voltage meter
-#define V3 34 //Set to V1 if using only one voltage meter
+#define V2 36
+#define V3 39 
 
 #define I1 35
 #define I2 32
