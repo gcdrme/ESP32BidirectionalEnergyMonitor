@@ -73,8 +73,8 @@ public:
   Sensor *powerfactor_sensor3 = new Sensor();
   Sensor *supplyvoltage_sensor3 = new Sensor();
   Sensor *current_sensor3 = new Sensor();
-  Sensor *importpower_sensor_total = new Sensor();  
-  Sensor *exportpower_sensor_total = new Sensor();   
+  Sensor *importpower_sensor3 = new Sensor();  
+  Sensor *exportpower_sensor3 = new Sensor();   
 
   // Total sensors
   Sensor *realpower_sensor_total = new Sensor();
